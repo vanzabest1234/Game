@@ -161,7 +161,7 @@ export default function App() {
           <button type="button" className="dial__btn" onClick={answer}>
             CALL ▸
           </button>
-          <div className="dial__hint">KEEP YOUR EYES ON THE ROAD</div>
+          <div className="dial__hint">A / D LOOK · KEEP YOUR EYES ON THE ROAD</div>
         </div>
       </div>
     )
