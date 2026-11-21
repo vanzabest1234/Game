@@ -1,9 +1,16 @@
 # DEAD AIR
 
-A psychological audio horror game. You work the graveyard shift at Kettle Ridge
-Relay during a blizzard: take panicked calls, cross-reference the county board,
-and send help — while every caller describes the same thing walking toward your
-building. You never see it. You only hear it get closer.
+A Game Boy-style psychological horror game about a night shift on the road.
+
+You are Unit 7, the only county car out during a blizzard. Dispatch sends you an
+address. You drive, you call the people inside, and then you choose:
+
+- **A — Go in.** Leave the car, handle whatever is happening, and pick your
+  actions carefully.
+- **B — Disclose.** Stay in the car and radio the call in to dispatch.
+
+One of those is right for each address. Get it wrong and the county keeps a
+receipt: three mess-ups and the night is lost.
 
 ## Play
 
@@ -12,8 +19,16 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Headphones recommended; the sound design is
-synthesised live with the Web Audio API.
+Open http://localhost:3000. The whole game runs on a 160×144 green LCD screen
+with a dot-matrix finish. Tap or click the choices on screen, or use a keyboard:
+
+- **Enter / Space** — continue
+- **Arrow Up / Down** — choose an action
+- **Escape** — back / title
+- **M** — sound on/off
+
+Headphones recommended. All audio is synthesised live with the Web Audio API:
+the engine, the road hiss, the static, the chiptune beeps.
 
 Callers are voiced by free, open Piper neural voices running on the device
 (`@diffusionstudio/vits-web`) — no API key and no server. The two voice models
@@ -23,27 +38,28 @@ the browser's built-in speech voice.
 
 ## How a night runs
 
-1. **Answer** the incoming line (it connects on its own if you wait).
-2. **Listen** — the transcript types out; `Skip ahead` moves to the next line,
-   `Rewind tape` replays the whole call.
-3. **Dispatch** one of three instructions. Road closures, the beacon schedule and
-   the two protocols on the county board decide which one keeps the caller alive.
-4. **Log the call.** Wrong advice raises the interference meter, darkens the
-   board with a new entry, and comes back in the next caller's background radio.
-
-Four mistakes and the tower is lost. Survive all six calls to reach 04:00.
-There is no monster on screen, by design.
+1. **Drive.** Dispatch gives you an address. The road scrolls; press A to place
+   the call (it dials itself if you wait).
+2. **Listen.** The caller describes what is happening while you drive. Skip
+   ahead with A.
+3. **Arrive.** The car stops. Choose **GO IN** or **DISCLOSE**.
+4. **Cutscene.** If you go in, you get out of the car, see the scene, and pick
+   one of three actions. Only one is clean.
+5. **Log it.** A clean call keeps the interference down. A mess-up raises it,
+   adds a line to the dispatch log, and comes back later.
+6. **04:00.** Survive all five addresses with fewer than three mess-ups.
 
 ## Layout
 
 ```
 src/
-  App.jsx                 screen state + board layout
-  audio/engine.js         procedural wind, static, beacon, drone, voice
-  game/calls.js           the six calls, bulletin, map and endings
-  game/useGame.js         call pacing, dispatch resolution, tension
-  components/             title, briefing, console, map, dispatch, board, log, ending
-  styles.css              CRT phosphor styling and responsive layout
+  App.jsx                 screen phases, input, and the LCD frame
+  audio/engine.js         engine, wind, static, chiptune, caller voice
+  audio/voice.js          on-device Piper voice playback
+  game/night.js           the five addresses, actions and endings
+  game/useNight.js        drive/call/arrive/cutscene state machine
+  components/             GameBoy shell, road, scenes, HUD, call, choices
+  styles.css              DMG palette, dot-matrix screen, handheld plastic
 ```
 
 ## Build

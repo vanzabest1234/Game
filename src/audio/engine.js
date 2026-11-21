@@ -21,6 +21,7 @@ export class AudioEngine {
     this.voiceStatus = 'idle'
     this.voiceProgress = 0
     this.onVoiceStatus = null
+    this.driveNodes = null
 
     // Free local neural voices (Kokoro). Starts downloading as soon as the
     // title screen mounts; the browser voice covers the gap and any failure.
@@ -178,6 +179,75 @@ export class AudioEngine {
     if (!shouldBeat && this.heartOn) this.stopHeart()
   }
 
+  // Engine rumble and tyre hiss while the car is rolling. Two square waves
+  // under a low-pass keep it in the Game Boy's register.
+  setDriving(on) {
+    if (!this.ctx) return
+    if (on) {
+      if (!this.driveNodes) {
+        const ctx = this.ctx
+        const gain = ctx.createGain()
+        gain.gain.value = 0
+        gain.connect(this.master)
+
+        const osc = ctx.createOscillator()
+        osc.type = 'square'
+        osc.frequency.value = 46
+        const osc2 = ctx.createOscillator()
+        osc2.type = 'square'
+        osc2.frequency.value = 92.5
+        const filt = ctx.createBiquadFilter()
+        filt.type = 'lowpass'
+        filt.frequency.value = 230
+        const sub = ctx.createGain()
+        sub.gain.value = 0.32
+        osc.connect(filt)
+        osc2.connect(sub).connect(filt)
+        filt.connect(gain)
+
+        const road = ctx.createBufferSource()
+        road.buffer = this.noiseBuffer
+        road.loop = true
+        const rf = ctx.createBiquadFilter()
+        rf.type = 'lowpass'
+        rf.frequency.value = 520
+        const rg = ctx.createGain()
+        rg.gain.value = 0
+        road.connect(rf).connect(rg).connect(this.master)
+
+        osc.start()
+        osc2.start()
+        road.start()
+        this.driveNodes = { gain, osc, osc2, rg }
+      }
+      const t = this.ctx.currentTime
+      this.driveNodes.gain.gain.setTargetAtTime(0.05, t, 0.6)
+      this.driveNodes.rg.gain.setTargetAtTime(0.03, t, 0.8)
+      this.driveNodes.osc.frequency.setTargetAtTime(46, t, 0.5)
+      this.driveNodes.osc2.frequency.setTargetAtTime(92.5, t, 0.5)
+    } else if (this.driveNodes) {
+      const t = this.ctx.currentTime
+      this.driveNodes.gain.gain.setTargetAtTime(0, t, 0.25)
+      this.driveNodes.rg.gain.setTargetAtTime(0, t, 0.3)
+    }
+  }
+
+  // Short square-wave UI tone.
+  beep(freq = 880, dur = 0.06, level = 0.05, type = 'square') {
+    if (!this.ctx) return
+    const t = this.ctx.currentTime
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = type
+    osc.frequency.setValueAtTime(freq, t)
+    g.gain.setValueAtTime(0, t)
+    g.gain.linearRampToValueAtTime(level, t + 0.005)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+    osc.connect(g).connect(this.master)
+    osc.start(t)
+    osc.stop(t + dur + 0.02)
+  }
+
   startHeart() {
     if (this.heartTimer || !this.ctx) return
     this.heartOn = true
@@ -197,12 +267,12 @@ export class AudioEngine {
     this.heartTimer = null
   }
 
-  blip(freq, dur, level, at) {
+  blip(freq, dur, level, at, type = 'sine') {
     if (!this.ctx) return
     const t = at ?? this.ctx.currentTime
     const osc = this.ctx.createOscillator()
     const g = this.ctx.createGain()
-    osc.type = 'sine'
+    osc.type = type
     osc.frequency.setValueAtTime(freq, t)
     g.gain.setValueAtTime(0, t)
     g.gain.linearRampToValueAtTime(level, t + 0.015)
@@ -237,7 +307,7 @@ export class AudioEngine {
     // North-American ringback: 440+480 Hz, two seconds on, one off.
     for (let i = 0; i < 2; i += 1) {
       const start = t + i * 3.2
-      ;[440, 480].forEach((f) => this.blip(f, 1.9, 0.06, start))
+      ;[440, 480].forEach((f) => this.blip(f, 1.9, 0.045, start, 'square'))
     }
   }
 
@@ -256,16 +326,17 @@ export class AudioEngine {
   correct() {
     if (!this.ctx) return
     const t = this.ctx.currentTime
-    this.blip(392, 0.5, 0.05, t)
-    this.blip(523, 0.7, 0.04, t + 0.16)
+    this.blip(660, 0.09, 0.05, t, 'square')
+    this.blip(880, 0.14, 0.05, t + 0.1, 'square')
+    this.blip(1174, 0.2, 0.04, t + 0.24, 'square')
   }
 
   wrong() {
     if (!this.ctx) return
-    this.burst(0.9, 0.3)
+    this.burst(0.7, 0.28)
     const t = this.ctx.currentTime
-    this.blip(88, 1.4, 0.12, t)
-    this.blip(62, 1.8, 0.1, t + 0.1)
+    this.blip(110, 0.4, 0.1, t, 'square')
+    this.blip(82, 0.55, 0.09, t + 0.14, 'square')
   }
 
   knock() {
@@ -324,6 +395,7 @@ export class AudioEngine {
     this.stopHeart()
     this.cancelSpeech()
     this.speaker.dispose()
+    this.driveNodes = null
     if (this.ctx) {
       try {
         this.ctx.close()

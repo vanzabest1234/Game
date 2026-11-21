@@ -1,28 +1,22 @@
-import { OPENING } from '../game/calls'
+import { NIGHT } from '../game/night'
 
 export default function Briefing({ onClockIn }) {
   return (
-    <div className="screen briefing">
-      <div className="briefing__panel">
-        <div className="briefing__head">
-          <span className="rec-dot" /> SHIFT LOG · KETTLE RIDGE RELAY · 02:14
-        </div>
-        <div className="briefing__lines">
-          {OPENING.lines.map((line, i) => (
-            <p key={i} style={{ animationDelay: `${i * 0.5}s` }}>
-              {line}
-            </p>
-          ))}
-        </div>
-        <button
-          className="btn btn--primary"
-          onClick={onClockIn}
-          type="button"
-          autoFocus
-        >
-          Clock in
-        </button>
+    <div className="scr scr--brief">
+      <div className="brief__head">
+        <span className="brief__rec" aria-hidden="true" />
+        SHIFT LOG · 02:14
       </div>
+      <div className="brief__lines">
+        {NIGHT.opening.lines.map((line, i) => (
+          <p key={i} style={{ animationDelay: `${i * 0.28}s` }}>
+            {line}
+          </p>
+        ))}
+      </div>
+      <button type="button" className="brief__foot blink" onClick={onClockIn}>
+        TAP TO CLOCK IN
+      </button>
     </div>
   )
 }
