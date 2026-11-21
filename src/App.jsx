@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AudioEngine } from './audio/engine'
 import { useGame } from './game/useGame'
 import TitleScreen from './components/TitleScreen'
@@ -15,6 +15,19 @@ export default function App() {
   const engineRef = useRef(null)
   if (!engineRef.current) engineRef.current = new AudioEngine()
   const engine = engineRef.current
+
+  const [voice, setVoice] = useState({ status: 'idle', progress: 0 })
+  const [speaking, setSpeaking] = useState(false)
+
+  useEffect(() => {
+    engine.onVoiceStatus = setVoice
+    engine.onVoiceActivity = setSpeaking
+    engine.initVoices()
+    return () => {
+      engine.onVoiceStatus = null
+      engine.onVoiceActivity = null
+    }
+  }, [engine])
 
   const game = useGame(engine)
   const {
@@ -54,7 +67,9 @@ export default function App() {
         <div className="fx__scanlines" />
       </div>
 
-      {phase === 'title' && <TitleScreen onStart={start} />}
+      {phase === 'title' && (
+        <TitleScreen onStart={start} voiceStatus={voice.status} voiceProgress={voice.progress} />
+      )}
       {phase === 'briefing' && <Briefing onClockIn={clockIn} />}
 
       {inGame && (
@@ -66,6 +81,8 @@ export default function App() {
             total={total}
             muted={muted}
             setMuted={setMuted}
+            voiceStatus={voice.status}
+            voiceProgress={voice.progress}
           />
 
           <main className="board__grid">
@@ -78,6 +95,7 @@ export default function App() {
               onAnswer={answer}
               onSkip={skip}
               onRewind={rewind}
+              speaking={speaking}
             />
 
             <div className="board__col">

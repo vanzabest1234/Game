@@ -1,4 +1,4 @@
-export default function TitleScreen({ onStart }) {
+export default function TitleScreen({ onStart, voiceStatus = 'idle', voiceProgress = 0 }) {
   return (
     <div className="screen title-screen">
       <div className="title-screen__inner">
@@ -35,6 +35,21 @@ export default function TitleScreen({ onStart }) {
         <button className="btn btn--primary btn--wide" onClick={onStart} type="button">
           Begin shift
         </button>
+
+        <p className="title-screen__voice" data-voice-status={voiceStatus}>
+          {voiceStatus === 'loading' && (
+            <>
+              <span className="voice-dot" /> Preparing voices · {voiceProgress}% of the
+              model downloaded
+            </>
+          )}
+          {voiceStatus === 'ready' && (
+            <>
+              <span className="voice-dot voice-dot--ready" /> Neural voices ready
+            </>
+          )}
+          {voiceStatus === 'error' && 'Voice model unavailable — using device voice'}
+        </p>
 
         <p className="title-screen__foot">
           Headphones recommended · Best played in the dark · Contains sudden noise

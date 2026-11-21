@@ -3,17 +3,47 @@
 // scale with the interference meter. Callers are spoken with the browser's
 // speech engine, pitched per character, over a radio static bed.
 
+import { VoicePlayer } from './voice.js'
+
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
 
 export class AudioEngine {
   constructor() {
     this.ctx = null
     this.master = null
+    this.voiceBus = null
     this.muted = false
     this.ready = false
-    this.voice = null
+    this.browserVoice = null
     this.heartTimer = null
     this.heartOn = false
+
+    this.voiceStatus = 'idle'
+    this.voiceProgress = 0
+    this.onVoiceStatus = null
+
+    // Free local neural voices (Kokoro). Starts downloading as soon as the
+    // title screen mounts; the browser voice covers the gap and any failure.
+    this.speaker = new VoicePlayer({
+      getContext: () => this.ctx,
+      getDestination: () => this.voiceBus || this.master,
+      onStatus: ({ status, progress }) => {
+        this.voiceStatus = status
+        this.voiceProgress = progress
+        this.onVoiceStatus?.({ status, progress })
+      },
+      onSpeaking: (active) => this.onVoiceActivity?.(active),
+      onFallback: (text, voice) => this.speakBrowser(text, voice),
+    })
+    this.onVoiceActivity = null
+  }
+
+  initVoices() {
+    this.speaker.init()
+  }
+
+  prepareLines(texts, voice) {
+    this.speaker.prepare(texts, voice)
   }
 
   async start() {
@@ -29,6 +59,10 @@ export class AudioEngine {
     this.master = ctx.createGain()
     this.master.gain.value = this.muted ? 0 : 0.85
     this.master.connect(ctx.destination)
+
+    this.voiceBus = ctx.createGain()
+    this.voiceBus.gain.value = 1
+    this.voiceBus.connect(this.master)
 
     // 3s of noise, reused everywhere.
     const len = Math.floor(ctx.sampleRate * 3)
@@ -96,6 +130,14 @@ export class AudioEngine {
     this.ready = true
     this.setTension(0.08)
     this.pickVoice()
+
+    // Browsers may suspend the context until a gesture lands; keep it awake.
+    this.resume = () => {
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume()
+    }
+    document.addEventListener('pointerdown', this.resume, true)
+    document.addEventListener('keydown', this.resume, true)
+    this.resume()
   }
 
   pickVoice() {
@@ -103,7 +145,7 @@ export class AudioEngine {
     const choose = () => {
       const voices = window.speechSynthesis.getVoices() || []
       const en = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith('en'))
-      this.voice =
+      this.browserVoice =
         en.find((v) => /google us english/i.test(v.name)) ||
         en.find((v) => /samantha|daniel|alex|karen|serena/i.test(v.name)) ||
         en[0] ||
@@ -244,12 +286,21 @@ export class AudioEngine {
   }
 
   speak(text, voice = {}) {
-    if (this.muted || !window.speechSynthesis) return
+    if (this.muted) return
+    // Neural voice first; the browser voice only covers model loading/failure.
+    if (this.voiceStatus === 'ready' && voice.piper) {
+      if (this.speaker.speak(text, voice)) return
+    }
+    this.speakBrowser(text, voice)
+  }
+
+  speakBrowser(text, voice = {}) {
+    if (!window.speechSynthesis) return
     const clean = text.replace(/\[[^\]]*\]/g, '').trim()
     if (!clean) return
     try {
       const u = new SpeechSynthesisUtterance(clean)
-      if (this.voice) u.voice = this.voice
+      if (this.browserVoice) u.voice = this.browserVoice
       u.lang = 'en-US'
       u.rate = voice.rate ?? 0.98
       u.pitch = voice.pitch ?? 1
@@ -261,6 +312,7 @@ export class AudioEngine {
   }
 
   cancelSpeech() {
+    this.speaker.cancel()
     try {
       if (window.speechSynthesis) window.speechSynthesis.cancel()
     } catch {
@@ -271,6 +323,7 @@ export class AudioEngine {
   dispose() {
     this.stopHeart()
     this.cancelSpeech()
+    this.speaker.dispose()
     if (this.ctx) {
       try {
         this.ctx.close()

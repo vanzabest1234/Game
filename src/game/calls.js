@@ -69,7 +69,7 @@ export const CALLS = [
     callerSub: 'CEDAR HOLLOW CARE HOME',
     channel: 'EXT 214',
     marker: 'cedar',
-    voice: { rate: 0.9, pitch: 1.18 },
+    voice: { piper: 'en_US-amy-medium', rate: 0.94, pitch: 1.18 },
     lines: [
       L('Dispatch? It\'s Marge at Cedar Hollow. I\'m sorry, honey, I know it\'s late.'),
       L('I\'ve got a resident standing out in the parking lot. Mr. Halloran. He\'s in his robe, no coat, no shoes.'),
@@ -123,7 +123,7 @@ export const CALLS = [
     callerSub: 'CAR 12 · ROUTE 9, MILE 12',
     channel: 'CH 4',
     marker: 'mile12',
-    voice: { rate: 1.05, pitch: 0.82 },
+    voice: { piper: 'en_US-ryan-medium', rate: 1.03, pitch: 0.82 },
     lines: [
       L('Dispatch, Voss. Car 12. I\'m at mile twelve on Ridge and my engine just quit. Battery\'s fine. Everything\'s fine. It just quit.'),
       L('There\'s something walking the tree line. Keeping pace with me. Same speed I walk. Same speed I stop.'),
@@ -177,7 +177,7 @@ export const CALLS = [
     callerSub: 'MILL CREEK ROAD · RESIDENCE',
     channel: '911 · LINE 3',
     marker: 'millcreek',
-    voice: { rate: 1.12, pitch: 1.32 },
+    voice: { piper: 'en_US-amy-medium', rate: 1.1, pitch: 1.32 },
     lines: [
       L('Is this the police? My mom\'s at the clinic with my dad. I\'m by myself and the power went out.'),
       L('There\'s somebody knocking. He says he\'s my dad. He sounds exactly like my dad.'),
@@ -230,7 +230,7 @@ export const CALLS = [
     callerSub: 'UNREGISTERED · RIDGE ABOVE QUARRY',
     channel: 'CH 2 · CARRIER OPEN',
     marker: 'ridge',
-    voice: { rate: 0.86, pitch: 0.72 },
+    voice: { piper: 'en_US-ryan-medium', rate: 0.86, pitch: 0.72 },
     lines: [
       L('This is Walt Pruitt. I\'m on the ridge above the quarry. Don\'t send anybody. I\'m not the one who needs help tonight.'),
       L('I surveyed this county for forty-one years. I know what snow does to sound. Tonight it\'s doing something else.'),
@@ -285,7 +285,7 @@ export const CALLS = [
     callerSub: 'CEDAR HOLLOW CARE HOME',
     channel: 'EXT 214 · LINE DEAD',
     marker: 'tower',
-    voice: { rate: 0.82, pitch: 1.1 },
+    voice: { piper: 'en_US-amy-medium', rate: 0.88, pitch: 1.1 },
     lines: [
       L('Dispatch. It\'s Marge. Honey, I\'m at your door.', 'static'),
       L('It\'s so cold out here. The plow never came. You said the plow would come.'),
@@ -339,7 +339,7 @@ export const CALLS = [
     callerSub: 'INTERNAL · RELAY ROOM',
     channel: 'CH 1 · SELF',
     marker: 'tower',
-    voice: { rate: 0.8, pitch: 0.9 },
+    voice: { piper: 'en_US-ryan-medium', rate: 0.92, pitch: 0.9 },
     lines: [
       L('[OPEN CARRIER] Wind. The room tone of your own relay room, eight seconds behind.', 'static'),
       L('Dispatch, this is the operator.', 'static'),

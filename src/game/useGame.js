@@ -38,6 +38,15 @@ export function useGame(engine) {
     engine.setMuted(muted)
   }, [muted, engine])
 
+  // Generate the call's lines ahead of playback so the voice keeps up.
+  useEffect(() => {
+    if (!call) return
+    engine.prepareLines(
+      lines.filter((line) => !line.radio).map((line) => line.t),
+      call.voice,
+    )
+  }, [call, lines, engine])
+
   // Ringing, then auto-connect so the night keeps moving.
   useEffect(() => {
     if (phase !== 'incoming') return

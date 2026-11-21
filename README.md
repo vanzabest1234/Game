@@ -13,8 +13,13 @@ npm run dev
 ```
 
 Open http://localhost:3000. Headphones recommended; the sound design is
-synthesised live with the Web Audio API and the callers are voiced with the
-browser's speech engine.
+synthesised live with the Web Audio API.
+
+Callers are voiced by free, open Piper neural voices running on the device
+(`@diffusionstudio/vits-web`) — no API key and no server. The two voice models
+are about 60 MB each and download once on first visit, cached afterwards; the
+title screen shows their progress. If they cannot load, the game falls back to
+the browser's built-in speech voice.
 
 ## How a night runs
 

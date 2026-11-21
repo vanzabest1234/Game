@@ -322,6 +322,31 @@ button {
   font-weight: 600;
 }
 
+.title-screen__voice {
+  margin: 16px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: recBlink 1.2s ease-in-out infinite;
+}
+
+.voice-dot--ready {
+  background: var(--good);
+  animation: none;
+  box-shadow: 0 0 8px rgba(111, 227, 176, 0.7);
+}
+
 .title-screen__foot {
   margin: 18px 0 0;
   font-size: 10px;
@@ -420,7 +445,7 @@ button {
 
 .hud {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto minmax(180px, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1.4fr) auto minmax(180px, 1fr) auto auto auto;
   align-items: center;
   gap: clamp(12px, 2vw, 28px);
   padding: 0 clamp(12px, 2vw, 22px);
@@ -543,6 +568,37 @@ button {
 .hud__shift b {
   color: var(--ink);
   font-weight: 600;
+}
+
+.hud__voice {
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud__voice[data-voice-status="ready"] {
+  color: var(--good);
+}
+
+.hud__voice[data-voice-status="loading"] {
+  color: var(--amber);
+}
+
+.hud__voice[data-voice-status="error"] {
+  color: var(--danger);
+}
+
+.hud__voice[data-voice-status="loading"]::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: recBlink 1.2s ease-in-out infinite;
 }
 
 .hud__mute {
@@ -670,6 +726,14 @@ button {
 
 .caller-card.is-ringing .caller-card__name {
   animation: recBlink 1.6s ease-in-out infinite;
+}
+
+.caller-card.is-speaking .caller-card__name {
+  text-shadow: 0 0 22px rgba(240, 169, 74, 0.28);
+}
+
+.caller-card.is-speaking .waveform span {
+  background: linear-gradient(to top, rgba(255, 196, 110, 0.45), rgba(255, 196, 110, 0.95));
 }
 
 .waveform {
@@ -1396,7 +1460,7 @@ button {
 
 @media (max-width: 1180px) {
   .hud {
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
     gap: 12px;
   }
   .hud__shift {
@@ -1464,6 +1528,9 @@ button {
     border: none;
     padding: 0;
     justify-self: end;
+  }
+  .hud__voice {
+    display: none;
   }
   .hud__meter {
     grid-column: 1 / 2;

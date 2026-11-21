@@ -55,6 +55,7 @@ export default function RadioConsole({
   onAnswer,
   onSkip,
   onRewind,
+  speaking = false,
 }) {
   const live = phase === 'call'
   const incoming = phase === 'incoming'
@@ -74,7 +75,10 @@ export default function RadioConsole({
         <span className="panel__meta">{call.channel}</span>
       </div>
 
-      <div className={`caller-card ${incoming ? 'is-ringing' : ''}`}>
+      <div
+        className={`caller-card ${incoming ? 'is-ringing' : ''} ${speaking ? 'is-speaking' : ''}`}
+        data-speaking={speaking ? 'true' : 'false'}
+      >
         <div className="caller-card__status">
           {incoming && 'INCOMING CALL'}
           {live && <span className="live-dot">LINE OPEN</span>}
